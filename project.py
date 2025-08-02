@@ -1,4 +1,7 @@
-from functions import get_entry_price, get_position_size, get_stop_loss_percentage, get_trade_direction, get_take_profit_pct, get_take_profit_pce, get_stop_loss_pce
+from functions import get_entry_price, get_position_size, get_stop_loss_percentage, get_trade_direction
+from functions import get_take_profit_pct, get_take_profit_pce, get_stop_loss_pce, get_stake, get_take_profit_tick
+from functions import get_growth_rate, get_target_profit, get_trades_per_day, get_tick_duration
+import math
 
 class Account():
     def __init__(self, name):
@@ -95,7 +98,13 @@ Total Risk       : ${total_risk:.2f}
 )
                 
             elif choice == "d":
-                results = deriv_accumulator()
+                stake = get_stake()
+                growth_rate = get_growth_rate()
+                target_profit = get_target_profit()
+                take_profit_tick = get_take_profit_tick()
+                tick_duration = get_tick_duration()
+                trades_per_day = get_trades_per_day()
+                results = deriv_accumulator(stake, take_profit_tick, tick_duration, trades_per_day, growth_rate, target_profit)
                 print(results)
             break  # Exit loop after successful function call
         except ValueError:
@@ -153,8 +162,33 @@ def reward_risk(entry_price, take_profit_pce, stop_loss_price, position_size, tr
     return ratio, reward_per_unit, risk_per_unit, total_reward, total_risk
     
 
-def deriv_accumulator():
+def deriv_accumulator(stake, take_profit_tick, tick_duration, trades_per_day, growth_rate=None, target_profit=None):
+    if target_profit is not None and growth_rate is not None:
+        implied_growth_rate = (target_profit / stake) * 100
+
+        if not math.isclose(implied_growth_rate, growth_rate, rel_tol=0.001):
+            raise ValueError(
+                f"Inconsistent inputs: Target profit of {target_profit} "
+                f"implies {implied_growth_rate:.2f}% growth, but you entered {growth_rate:.2f}%."
+            )
+
+        growth_rate = implied_growth_rate  # Use target_profit to derive growth_rate
+
+    elif target_profit is not None:
+        growth_rate = (target_profit / stake) * 100
+
+    elif growth_rate is not None:
+        if growth_rate > 5:
+            raise ValueError("Deriv Accumulator growth rate cannot exceed 5%")
+        target_profit = (growth_rate / 100) * stake
+
+    else:
+        raise ValueError("Provide at least one: target profit or growth rate")
+
+# Check if growth_rate exceeds 5%
+# if growth_rate > 5:
     ...
+
 
 if __name__ == "__main__":
     main()
