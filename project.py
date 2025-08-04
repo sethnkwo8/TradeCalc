@@ -1,4 +1,4 @@
-from functions import get_entry_price, get_position_size, get_stop_loss_percentage, get_trade_direction
+from functions import get_entry_price, get_position_size, get_stop_loss_percentage, get_valid_trade_direction
 from functions import get_take_profit_pct, get_take_profit_pce, get_stop_loss_price, get_stake, get_take_profit_tick
 from functions import get_growth_rate, get_target_profit, get_trades_per_day, get_tick_duration, get_ticks_per_trade
 from functions import growth_rate_exceeds, deriv_output_format
@@ -31,13 +31,14 @@ def main():
                 entry_price = get_entry_price()
                 stop_loss_percentage= get_stop_loss_percentage()
                 position_size = get_position_size()
-                trade_direction = get_trade_direction()
+                trade_direction = input("Enter trade direction (long or short): ").strip().lower()
+                trade_direction = get_valid_trade_direction
                 stop_loss_price, risk_per_unit, potential_loss = stop_loss(entry_price, stop_loss_percentage, position_size, trade_direction)
                 print("\n--- CALCULATION RESULTS ---")
                 print(f"""
 🔻 Stop Loss Analysis
 
-Trade Type      : {trade_direction.capitalize()}
+Trade Type      : {"Long" if trade_direction == "long" else "Short"}
 Entry Price     : ${entry_price:.2f}
 Stop Loss (%)   : ${stop_loss_price:.2f}
 Position Size   : {position_size} units
@@ -54,13 +55,13 @@ Total Risk      : ${potential_loss:.2f}
                 entry_price = get_entry_price()
                 take_profit_pct = get_take_profit_pct()
                 position_size = get_position_size()
-                trade_direction = get_trade_direction()
+                trade_direction = get_valid_trade_direction
                 take_profit_price, reward_per_unit, total_reward = take_profit(entry_price, take_profit_pct, position_size, trade_direction)
                 print("\n--- CALCULATION RESULTS ---")
                 print(f"""
 📈 Take Profit Analysis
 
-Trade Type         : {trade_direction.capitalize()}
+Trade Type         : {"Long" if trade_direction == "long" else "Short"}
 Entry Price        : ${entry_price:.2f}
 Take Profit (%)    : ${take_profit_pct:.2f}
 Position Size      : {position_size} units
@@ -77,13 +78,13 @@ Total Reward       : ${total_reward:.2f}
                 take_profit_pce = get_take_profit_pce()
                 stop_loss_price = get_stop_loss_price()
                 position_size = get_position_size()
-                trade_direction = get_trade_direction()
+                trade_direction = get_valid_trade_direction
                 ratio, reward_per_unit, risk_per_unit, total_reward, total_risk = reward_risk(entry_price, take_profit_pce, stop_loss_price, position_size, trade_direction)
                 print("\n--- CALCULATION RESULTS ---")
                 print(f"""
 📊 Reward-to-Risk Analysis
 
-Trade Type       : {trade_direction.capitalize()}
+Trade Type       : {"Long" if trade_direction == "long" else "Short"}
 Entry Price      : ${entry_price:.2f}
 Take-Profit Price: ${take_profit_pce:.2f}
 Stop-Loss Price  : ${stop_loss_price:.2f}
@@ -106,147 +107,133 @@ Total Risk       : ${total_risk:.2f}
                 tick_duration = get_tick_duration()
                 trades_per_day = get_trades_per_day()
                 ticks_per_trade = get_ticks_per_trade()
+
                 results = deriv_accumulator(stake, take_profit_tick, tick_duration, trades_per_day, ticks_per_trade)
-                print("\n")
-                print(results)
+                formatted_output = deriv_output_format(**results)
+                print("\n", formatted_output)
                 break  # Exit loop after successful function call
 
             else:
                 print("Enter a valid input 's', 't', 'r' or 'd'")
                 continue
-        except TypeError:
-            print("Invalid input")
+
+        except Exception as e:
+            print(f"⚠️ Invalid input: {e}")
+            continue
         
 def stop_loss(entry_price, stop_loss_percentage, position_size, trade_direction):
-    while True:
-        try:
-            risk_per_unit = (entry_price * stop_loss_percentage)/ 100
-            if trade_direction == "long":
-                stop_loss_price = entry_price - risk_per_unit
-            elif trade_direction == "short":
-                stop_loss_price = entry_price + risk_per_unit
-            else:
-                print("Trade direction must be 'long' or 'short'")
-                continue
+    if trade_direction.lower() not in ("long", "short"):
+        raise ValueError("Trade direction must be 'long' or 'short'")
+    
+    risk_per_unit = (entry_price * stop_loss_percentage) / 100
+    stop_loss_price = entry_price - risk_per_unit if trade_direction == "long" else entry_price + risk_per_unit
+    units = position_size / entry_price
+    potential_loss = risk_per_unit * units
+    return stop_loss_price, risk_per_unit, potential_loss
 
-            units = position_size / entry_price
-            potential_loss = risk_per_unit * units
-
-            return stop_loss_price, risk_per_unit, potential_loss
-        
-        except ValueError:
-            print("Invalid input. Please try again.")
 
 
 def take_profit(entry_price, take_profit_pct, position_size, trade_direction):
-    while True:
-        try:
-            if trade_direction == "long":
-                take_profit_price = entry_price * (1 + take_profit_pct / 100)
-            elif trade_direction == "short":
-                take_profit_price = entry_price * (1 - take_profit_pct / 100)
-            else:
-                print("Trade direction must be 'long' or 'short'")
-                continue
-        
-            reward_per_unit = abs(take_profit_price - entry_price)
-            units = position_size / entry_price
-            total_reward = reward_per_unit * units
-
-            return take_profit_price, reward_per_unit, total_reward
-        
-        except ValueError:
-            print("Invalid input. Please try again.")
-
-def reward_risk(entry_price, take_profit_pce, stop_loss_price, position_size, trade_direction):
-    while True:
-        try:
-            if trade_direction == "long":
-                reward_per_unit = take_profit_pce - entry_price
-            elif trade_direction == "short":
-                reward_per_unit = entry_price - take_profit_pce
-            else:
-                print("Trade direction must be 'long' or 'short'")
-                continue
-            
-            if trade_direction == "long":
-                risk_per_unit = entry_price - stop_loss_price
-            elif trade_direction == "short":
-                risk_per_unit = stop_loss_price - entry_price
-            else:
-                print("Trade direction must be 'long' or 'short'")
-                continue
-            
-            total_reward = reward_per_unit * position_size
-            total_risk = risk_per_unit * position_size
-            ratio =(abs(take_profit_pce - entry_price)) / (abs(entry_price - stop_loss_price))
-            return ratio, reward_per_unit, risk_per_unit, total_reward, total_risk
-        
-        except ValueError:
-            print("Invalid input. Please try again.")
-        
-
-def deriv_accumulator(stake, take_profit_tick, tick_duration, trades_per_day, ticks_per_trade):
-    while True:
-        try:
-            growth_rate = get_growth_rate()
-            target_profit = get_target_profit()
-
-            if target_profit is not None and growth_rate is not None:
-                implied_growth_rate = (target_profit / stake) * 100
-                if not math.isclose(implied_growth_rate, growth_rate, rel_tol=0.001):
-                    print(
-                        f"Inconsistent inputs: Target profit of ${target_profit:.2f} "
-                        f"implies {implied_growth_rate:.2f}% growth, but you entered {growth_rate:.2f}%."
-                    )
-                    continue
-                growth_rate = implied_growth_rate
-
-            elif target_profit is not None:
-                growth_rate = (target_profit / stake) * 100
-
-            elif growth_rate is not None:
-                target_profit = (growth_rate / 100) * stake
-
-            else:
-                print("Provide at least one: target profit or growth rate")
-                continue  # re-prompt
-
-            # Initialize optional outputs
-            compound_mode = False
-            no_trades = None
-            targets = None
-            actual_profit = None
-
-            if growth_rate > 5:
-                compound_mode = True
-                targets, total_target, no_trades, actual_profit = growth_rate_exceeds(stake, target_profit)
-
-            # Ticks logic
-            ticks_needed = target_profit / take_profit_tick if take_profit_tick else None
-            estimated_time = tick_duration * ticks_needed if ticks_needed and tick_duration else None
-            daily_sessions_target = take_profit_tick * trades_per_day if take_profit_tick and trades_per_day else None
-
-            final = deriv_output_format(
-                stake,
-                growth_rate,
-                target_profit,
-                take_profit_tick,
-                trades_per_day,
-                tick_duration,
-                compound_mode,
-                no_trades,
-                targets,
-                actual_profit
-            )
-
-            return final
-
-        except ValueError:
-            print("Invalid input. Please try again.")
-
-
+    if trade_direction.lower() not in ("long", "short"):
+        raise ValueError("Trade direction must be 'long' or 'short'")
     
+    take_profit_price = entry_price * (1 + take_profit_pct / 100) if trade_direction == "long" else entry_price * (1 - take_profit_pct / 100)
+    reward_per_unit = abs(take_profit_price - entry_price)
+    units = position_size / entry_price
+    total_reward = reward_per_unit * units
+    return take_profit_price, reward_per_unit, total_reward
+
+
+def reward_risk(entry_price, take_profit_price, stop_loss_price, position_size, trade_direction):
+    if trade_direction.lower() not in ("long", "short"):
+        raise ValueError("Trade direction must be 'long' or 'short'")
+
+    reward_per_unit = take_profit_price - entry_price if trade_direction == "long" else entry_price - take_profit_price
+    risk_per_unit = entry_price - stop_loss_price if trade_direction == "long" else stop_loss_price - entry_price
+    total_reward = reward_per_unit * position_size
+    total_risk = risk_per_unit * position_size
+    ratio = abs(reward_per_unit / risk_per_unit)
+    return ratio, reward_per_unit, risk_per_unit, total_reward, total_risk
+
+        
+def deriv_accumulator(stake, take_profit_tick, tick_duration, trades_per_day, ticks_per_trade):
+    try:
+        growth_rate = get_growth_rate() or None
+        target_profit = get_target_profit() or None
+
+        result = accumulator_core(
+            stake,
+            take_profit_tick,
+            tick_duration,
+            trades_per_day,
+            ticks_per_trade,
+            growth_rate=growth_rate,
+            target_profit=target_profit
+        )
+        return result
+
+    except ValueError as e:
+        return f"⚠️ Accumulator Error: {e}"
+
+    except Exception as e:
+        return f"⚠️ Unexpected Error: {e}"
+
+
+def accumulator_core(
+    stake,
+    take_profit_tick,
+    tick_duration,
+    trades_per_day,
+    ticks_per_trade,
+    growth_rate=None,
+    target_profit=None
+    ):
+        if target_profit is not None and growth_rate is not None:
+            implied_growth_rate = (target_profit / stake) * 100
+            if not math.isclose(implied_growth_rate, growth_rate, rel_tol=0.001):
+                raise ValueError(
+                    f"Inconsistent inputs: Target profit of ${target_profit:.2f} "
+                    f"implies {implied_growth_rate:.2f}% growth, but got {growth_rate:.2f}%."
+                )
+            growth_rate = implied_growth_rate
+        
+        if growth_rate is None and target_profit is None:
+            raise ValueError("You must enter either a growth rate or target profit.")
+
+        elif target_profit is not None:
+            growth_rate = (target_profit / stake) * 100
+
+        elif growth_rate is not None:
+            target_profit = (growth_rate / 100) * stake
+
+        else:
+            raise ValueError("Provide at least one: target profit or growth rate")
+
+        compound_mode = False
+        no_trades = None
+        targets = None
+        actual_profit = None
+
+        if growth_rate > 5:
+            compound_mode = True
+            targets, total_target, no_trades, actual_profit = growth_rate_exceeds(stake, target_profit)
+
+        ticks_needed = target_profit / take_profit_tick if take_profit_tick else None
+        estimated_time = tick_duration * ticks_needed if ticks_needed and tick_duration else None
+        daily_sessions_target = take_profit_tick * trades_per_day if take_profit_tick and trades_per_day else None
+
+        return {
+        "stake": stake,
+        "growth_rate": round(growth_rate, 2),
+        "target_profit": round(target_profit, 2),
+        "take_profit_tick": take_profit_tick,
+        "tick_duration": tick_duration,
+        "trades_per_day": trades_per_day,
+        "compound_mode": compound_mode,
+        "no_trades": no_trades,
+        "actual_profit": actual_profit,
+        "targets": targets
+    }
 
         
 if __name__ == "__main__":

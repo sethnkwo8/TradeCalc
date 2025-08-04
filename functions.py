@@ -44,16 +44,13 @@ def get_position_size():
         except ValueError:
             print("Invalid position size. Please enter a number.")
 
-def get_trade_direction():
+def get_valid_trade_direction():
     while True:
-        try:
-            trade_direction = input("Are you going long or short? ").strip().lower()
-            if trade_direction not in ("long", "short"):
-                print("Enter a valid input 'long' or 'short'")
-                continue
-            return trade_direction
-        except ValueError:
-            print("Trade direction must either be 'long' or 'short'")
+        direction = input("Enter trade direction (long or short): ").strip().lower()
+        if direction in ("long", "short"):
+            return direction
+        else:
+            print("⚠️ Trade direction must be 'long' or 'short'. Please try again.")
 
 def get_take_profit_pct():
     while True:
@@ -209,7 +206,7 @@ def deriv_output_format(
         output.append(f"Profit After Compounding: ${actual_profit:.2f}")
         output.append("\nCompound Trade Targets:")
         for i, target in enumerate(targets[1:], 1):  # skip initial stake
-            output.append(f"  Trade {i}: ${target:.2f}")
+            output.append(f"  Trade {i}: ${target:.2f}\n")
     else:
         ticks_needed = target_profit / take_profit_tick
         estimated_time = ticks_needed * tick_duration
@@ -217,6 +214,6 @@ def deriv_output_format(
 
         output.append(f"Ticks Needed to Hit Profit: {int(ticks_needed)}")
         output.append(f"Estimated Time to Target: {estimated_time:.1f} minutes")
-        output.append(f"Daily Profit at Current Settings: ${daily_sessions_target:.2f}/day")
+        output.append(f"Daily Profit at Current Settings: ${daily_sessions_target:.2f}/day\n")
 
     return "\n".join(output)
