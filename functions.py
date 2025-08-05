@@ -1,4 +1,5 @@
 import math
+import matplotlib.pyplot as plt
 
 def get_entry_price():
     while True:
@@ -217,3 +218,26 @@ def deriv_output_format(
         output.append(f"Daily Profit at Current Settings: ${daily_sessions_target:.2f}/day\n")
 
     return "\n".join(output)
+
+def bar_chart(stake, profit_per_tick, trades_per_day, compound_mode, targets, days=7 ):
+    if compound_mode and targets:
+        x_axis = [f"Day {i+1}" for i in range(len(targets))]
+        y_axis = [f"${(target * profit_per_tick * trades_per_day):.2f}" for target in targets]
+    else:
+        daily_profit = stake * profit_per_tick * trades_per_day
+        x_axis = [f"Day {i+1}" for i in range(days)]
+        y_axis = [f"${daily_profit * (i+1):.2f}" for i in range(days) ]
+    
+    plt.bar(x_axis,y_axis)
+    plt.title("Profit per day")
+    plt.xlabel("Days")
+    plt.ylabel("Profit")
+    plt.show()
+
+def get_chart():
+    while True:
+            outcome = input("Will you like to see a diagram representation of your profit per day (yes or no)? ").lower().strip()
+            if outcome in ["yes", "no"]:
+                return outcome
+            else:
+                print("Enter 'yes' or 'no'")

@@ -1,7 +1,7 @@
 from functions import get_entry_price, get_position_size, get_stop_loss_percentage, get_valid_trade_direction
 from functions import get_take_profit_pct, get_take_profit_pce, get_stop_loss_price, get_stake, get_take_profit_tick
 from functions import get_growth_rate, get_target_profit, get_trades_per_day, get_tick_duration, get_ticks_per_trade
-from functions import growth_rate_exceeds, deriv_output_format
+from functions import growth_rate_exceeds, deriv_output_format, bar_chart, get_chart
 import math
 
 class Account():
@@ -111,6 +111,8 @@ Total Risk       : ${total_risk:.2f}
                 results = deriv_accumulator(stake, take_profit_tick, tick_duration, trades_per_day, ticks_per_trade)
                 formatted_output = deriv_output_format(**results)
                 print("\n", formatted_output)
+                if get_chart() == "yes":
+                    bar_chart(stake, take_profit_tick, trades_per_day, results["compound_mode"], results["targets"])
                 break  # Exit loop after successful function call
 
             else:
@@ -122,7 +124,7 @@ Total Risk       : ${total_risk:.2f}
             continue
         
 def stop_loss(entry_price, stop_loss_percentage, position_size, trade_direction):
-    if trade_direction.lower() not in ("long", "short"):
+    if trade_direction not in ("long", "short"):
         raise ValueError("Trade direction must be 'long' or 'short'")
     
     risk_per_unit = (entry_price * stop_loss_percentage) / 100
@@ -134,7 +136,7 @@ def stop_loss(entry_price, stop_loss_percentage, position_size, trade_direction)
 
 
 def take_profit(entry_price, take_profit_pct, position_size, trade_direction):
-    if trade_direction.lower() not in ("long", "short"):
+    if trade_direction not in ("long", "short"):
         raise ValueError("Trade direction must be 'long' or 'short'")
     
     take_profit_price = entry_price * (1 + take_profit_pct / 100) if trade_direction == "long" else entry_price * (1 - take_profit_pct / 100)
@@ -145,7 +147,7 @@ def take_profit(entry_price, take_profit_pct, position_size, trade_direction):
 
 
 def reward_risk(entry_price, take_profit_price, stop_loss_price, position_size, trade_direction):
-    if trade_direction.lower() not in ("long", "short"):
+    if trade_direction not in ("long", "short"):
         raise ValueError("Trade direction must be 'long' or 'short'")
 
     reward_per_unit = take_profit_price - entry_price if trade_direction == "long" else entry_price - take_profit_price
