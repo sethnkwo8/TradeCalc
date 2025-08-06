@@ -1,3 +1,0 @@
-stake,growth rate,target profit,profit per tick,tick duration,trades per day,compound mode,no of trades,actual profit,targets
-$100.0,3.0%,$3.0,$0.1,2.0 mins,5.0 trades per day,False,N/A,$None,N/A
-$198.0 ,151.52% ,$300.0 ,$0.5 ,2.0 mins ,5.0 trades per day ,True ,19,$302.34 ,"207.90, 218.30, 229.21, 240.67, 252.70, 265.34, 278.61, 292.54, 307.16, 322.52, 338.65, 355.58, 373.36, 392.03, 411.63, 432.21, 453.82, 476.51, 500.34"
