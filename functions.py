@@ -232,6 +232,7 @@ def bar_chart(stake, profit_per_tick, trades_per_day, compound_mode, targets, da
     plt.title("Profit per day")
     plt.xlabel("Days")
     plt.ylabel("Profit")
+    plt.xticks(rotation=45)  # or 60 or 90 depending on how many days
     plt.show()
 
 def get_chart():

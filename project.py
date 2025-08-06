@@ -3,6 +3,9 @@ from functions import get_take_profit_pct, get_take_profit_pce, get_stop_loss_pr
 from functions import get_growth_rate, get_target_profit, get_trades_per_day, get_tick_duration, get_ticks_per_trade
 from functions import growth_rate_exceeds, deriv_output_format, bar_chart, get_chart
 import math
+import csv
+import os
+import sys
 
 class Account():
     def __init__(self, name):
@@ -111,8 +114,44 @@ Total Risk       : ${total_risk:.2f}
                 results = deriv_accumulator(stake, take_profit_tick, tick_duration, trades_per_day, ticks_per_trade)
                 formatted_output = deriv_output_format(**results)
                 print("\n", formatted_output)
+                fields = ["stake",
+                           "growth rate",
+                           "target profit",
+                           "profit per tick",
+                           "tick duration",
+                           "trades per day",
+                        #    "ticks per trade",
+                           "compound mode",
+                           "no of trades",
+                           "actual profit",
+                           "targets"
+                           ]
+                
+                csv_results = {
+    "stake": f'${results["stake"]} ',
+    "growth rate": f'{results["growth_rate"]}% ',
+    "target profit": f'${results["target_profit"]} ',
+    "profit per tick": f'${results["take_profit_tick"]} ',
+    "tick duration": f'{results["tick_duration"]} mins ',
+    "trades per day": f'{results["trades_per_day"]} trades per day ',
+    "compound mode": f'{results["compound_mode"]} ' ,
+    "no of trades": f'{results.get("no_trades") }' or "N/A ",
+    "actual profit": f'${results.get("actual_profit", "N/A")} ',
+    "targets": ", ".join([f"{t:.2f}" for t in results["targets"]]) if results["targets"] else "N/A "
+}
+
+                file_exists = os.path.exists("Trades History.csv")
+                with open("Trades History.csv", "a") as file:
+                    writer = csv.DictWriter(file, fieldnames=fields)
+
+                    if not file_exists:
+                        writer.writeheader()
+                    writer.writerow(csv_results)
+
                 if get_chart() == "yes":
                     bar_chart(stake, take_profit_tick, trades_per_day, results["compound_mode"], results["targets"])
+                elif get_chart() == "no":
+                    sys.exit()
                 break  # Exit loop after successful function call
 
             else:
