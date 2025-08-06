@@ -114,30 +114,35 @@ Total Risk       : ${total_risk:.2f}
                 results = deriv_accumulator(stake, take_profit_tick, tick_duration, trades_per_day, ticks_per_trade)
                 formatted_output = deriv_output_format(**results)
                 print("\n", formatted_output)
-                fields = ["stake",
-                           "growth rate",
-                           "target profit",
-                           "profit per tick",
-                           "tick duration",
-                           "trades per day",
-                        #    "ticks per trade",
-                           "compound mode",
-                           "no of trades",
-                           "actual profit",
-                           "targets"
+                fields = ["Stake",
+                           "Growth Rate",
+                           "Target Profit",
+                           "Profit per Tick",
+                           "Tick Duration",
+                           "Trades per Day",
+                           "Ticks Needed",
+                           "Daily Session Targets",
+                           "Estimated Time Needed",
+                           "Compound Mode",
+                           "No of Trades",
+                           "Actual Profit",
+                           "Targets"
                            ]
                 
                 csv_results = {
-    "stake": f'${results["stake"]} ',
-    "growth rate": f'{results["growth_rate"]}% ',
-    "target profit": f'${results["target_profit"]} ',
-    "profit per tick": f'${results["take_profit_tick"]} ',
-    "tick duration": f'{results["tick_duration"]} mins ',
-    "trades per day": f'{results["trades_per_day"]} trades per day ',
-    "compound mode": f'{results["compound_mode"]} ' ,
-    "no of trades": f'{results.get("no_trades") }' or "N/A ",
-    "actual profit": f'${results.get("actual_profit", "N/A")} ',
-    "targets": ", ".join([f"{t:.2f}" for t in results["targets"]]) if results["targets"] else "N/A "
+    "Stake": f' ${results["stake"]} ',
+    "Growth Rate": f' {results["growth_rate"]}% ',
+    "Target Profit": f' ${results["target_profit"]} ',
+    "Profit per Tick": f' ${results["profit_per_tick"]} ',
+    "Tick Duration": f' {results["tick_duration"]} mins ',
+    "Trades per Day": f' {results["trades_per_day"]} trades per day ',
+    "Ticks Needed": f' {results["ticks_needed"]:.0f} ticks needed ' if results["ticks_needed"] else " N/A ",
+    "Daily Session Targets": f' ${results["daily_sessions_target"]:.2f}/day ' if results["daily_sessions_target"] else " N/A ",
+    "Estimated Time Needed": f' {results["estimated_time"]:.0f} minutes ' if results["estimated_time"] else " N/A ",
+    "Compound Mode": f' {results["compound_mode"]} ',
+    "No of Trades": f' {results["no_trades"]} ' if results["no_trades"] else " N/A ",
+    "Actual Profit": f' ${results["actual_profit"]} ' if results["actual_profit"] else " N/A ",
+    "Targets": " , ".join([f"{t:.2f}" for t in results["targets"]]) if results["targets"] else " N/A "
 }
 
                 file_exists = os.path.exists("Trades History.csv")
@@ -148,10 +153,16 @@ Total Risk       : ${total_risk:.2f}
                         writer.writeheader()
                     writer.writerow(csv_results)
 
-                if get_chart() == "yes":
-                    bar_chart(stake, take_profit_tick, trades_per_day, results["compound_mode"], results["targets"])
-                elif get_chart() == "no":
-                    sys.exit()
+                while True:
+                    chart_response = get_chart()
+                    if chart_response == "yes":
+                        bar_chart(stake, take_profit_tick, trades_per_day, results["compound_mode"], results["targets"])
+                        break
+                    elif chart_response == "no":
+                        print("Exiting program.")
+                        sys.exit()
+                    else:
+                        print("Invalid input. Please enter 'yes' or 'no'.")
                 break  # Exit loop after successful function call
 
             else:
@@ -267,9 +278,12 @@ def accumulator_core(
         "stake": stake,
         "growth_rate": round(growth_rate, 2),
         "target_profit": round(target_profit, 2),
-        "take_profit_tick": take_profit_tick,
+        "profit_per_tick": take_profit_tick,
         "tick_duration": tick_duration,
         "trades_per_day": trades_per_day,
+        "ticks_needed": ticks_needed,
+        "daily_sessions_target": daily_sessions_target,
+        "estimated_time": estimated_time,
         "compound_mode": compound_mode,
         "no_trades": no_trades,
         "actual_profit": actual_profit,

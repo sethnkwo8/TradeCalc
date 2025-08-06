@@ -186,9 +186,9 @@ def get_ticks_per_trade():
                 print("Please enter a valid number of ticks (e.g., 10, 20).")
 
 def deriv_output_format(
-    stake, growth_rate, target_profit, take_profit_tick,
-    trades_per_day, tick_duration, compound_mode=False,
-    no_trades=None, targets=None, actual_profit=None
+    stake, growth_rate, target_profit, profit_per_tick, tick_duration,
+    trades_per_day, ticks_needed=None, daily_sessions_target=None, estimated_time=None,  compound_mode=False,
+    no_trades=None, actual_profit=None, targets=None
 ):
     output = []
 
@@ -197,7 +197,7 @@ def deriv_output_format(
     output.append(f"Initial Stake: ${stake:.2f}")
     output.append(f"Target Growth Rate: {growth_rate:.2f}%")
     output.append(f"Target Profit: ${target_profit:.2f}")
-    output.append(f"Take Profit per Tick: ${take_profit_tick:.2f}")
+    output.append(f"Take Profit per Tick: ${profit_per_tick:.2f}")
     output.append(f"Trades per Day: {trades_per_day}")
     output.append(f"Tick Duration: {tick_duration} minutes")
 
@@ -209,9 +209,9 @@ def deriv_output_format(
         for i, target in enumerate(targets[1:], 1):  # skip initial stake
             output.append(f"  Trade {i}: ${target:.2f}")
     else:
-        ticks_needed = target_profit / take_profit_tick
-        estimated_time = ticks_needed * tick_duration
-        daily_sessions_target = take_profit_tick * trades_per_day
+        # ticks_needed = target_profit / take_profit_tick
+        # estimated_time = ticks_needed * tick_duration
+        # daily_sessions_target = take_profit_tick * trades_per_day
 
         output.append(f"Ticks Needed to Hit Profit: {int(ticks_needed)}")
         output.append(f"Estimated Time to Target: {estimated_time:.1f} minutes")
