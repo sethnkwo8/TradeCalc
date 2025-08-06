@@ -207,7 +207,7 @@ def deriv_output_format(
         output.append(f"Profit After Compounding: ${actual_profit:.2f}")
         output.append("\nCompound Trade Targets:")
         for i, target in enumerate(targets[1:], 1):  # skip initial stake
-            output.append(f"  Trade {i}: ${target:.2f}\n")
+            output.append(f"  Trade {i}: ${target:.2f}")
     else:
         ticks_needed = target_profit / take_profit_tick
         estimated_time = ticks_needed * tick_duration
