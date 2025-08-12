@@ -131,34 +131,28 @@ def get_target_profit():
 
 def get_trades_per_day():
     while True:
-        tpd_input = input("Enter trades per day (trades planned per day/session), or press Enter to skip: ").strip()
-        if tpd_input == "":
-            return None
-        else:
-            try:
-                tpd = float(tpd_input)
-                if float(tpd_input) <= 0:
-                    print("Trades per day must be a positive integer")
-                    continue
-                return tpd
-            except ValueError:
-                print("Invalid input. Please enter an integer.")
+        tpd_input = input("Enter trades per day (trades planned per day/session): ").strip()
+        try:
+            tpd = float(tpd_input)
+            if float(tpd_input) <= 0:
+                print("Trades per day must be a positive integer")
+                continue
+            return tpd
+        except ValueError:
+            print("Invalid number of trades. Please enter an integer.")
 
 def get_tick_duration():
     while True:
-        tick_duration_input = input("Enter tick duration (in minutes per tick/contract), or press Enter to skip: ").strip()
-        
-        if tick_duration_input == "":
-            return None
-        else:
-            try:
-                tick_duration = float(tick_duration_input)
-                if float(tick_duration_input) <= 0:
-                    print("Tick duration must be a positive integer")
-                    continue
-                return tick_duration
-            except ValueError:
-                print("Invalid input. Please enter an integer")
+        tick_duration_input = input("Enter tick duration (in minutes per tick/contract): ").strip()
+    
+        try:
+            tick_duration = float(tick_duration_input)
+            if float(tick_duration_input) <= 0:
+                print("Tick duration must be a positive integer")
+                continue
+            return tick_duration
+        except ValueError:
+            print("Invalid tick duration. Please enter an integer")
 
 def growth_rate_exceeds(stake, target_profit):
         total_target = stake + target_profit
@@ -186,14 +180,12 @@ def get_ticks_per_trade():
                 print("Please enter a valid number of ticks (e.g., 10, 20).")
 
 def deriv_output_format(
-    stake, growth_rate, target_profit, profit_per_tick, tick_duration,
-    trades_per_day, ticks_needed=None, daily_sessions_target=None, estimated_time=None,  compound_mode=False,
+    stake=0, growth_rate=0, target_profit=0, profit_per_tick=0, tick_duration=0,
+    trades_per_day=0, ticks_needed=None, daily_sessions_target=None, estimated_time=None,  compound_mode=False,
     no_trades=None, actual_profit=None, targets=None
 ):
     output = []
 
-    output.append("📊 Deriv Accumulator Summary")
-    output.append("-" * 40)
     output.append(f"Initial Stake: ${stake:.2f}")
     output.append(f"Target Growth Rate: {growth_rate:.2f}%")
     output.append(f"Target Profit: ${target_profit:.2f}")
@@ -209,10 +201,6 @@ def deriv_output_format(
         for i, target in enumerate(targets[1:], 1):  # skip initial stake
             output.append(f"  Trade {i}: ${target:.2f}")
     else:
-        # ticks_needed = target_profit / take_profit_tick
-        # estimated_time = ticks_needed * tick_duration
-        # daily_sessions_target = take_profit_tick * trades_per_day
-
         output.append(f"Ticks Needed to Hit Profit: {int(ticks_needed)}")
         output.append(f"Estimated Time to Target: {estimated_time:.1f} minutes")
         output.append(f"Daily Profit at Current Settings: ${daily_sessions_target:.2f}/day\n")
